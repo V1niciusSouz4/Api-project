@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt'
 
 const { Schema } = mongoose
 
-//-----------------------User model
 const userSchema = new Schema(
   {
     name: {
@@ -21,9 +20,13 @@ const userSchema = new Schema(
       type: String,
       required: true
     },
+    adminGlobal:{
+      type: Boolean,
+      default: true
+    },
     admin:{
       type: Boolean,
-      undefined: false
+      default: true
     },
     secret: {
       type: String
@@ -38,10 +41,8 @@ const userSchema = new Schema(
 userSchema.pre('save', async function (next) {
   let user = this
 
-  //Caso a senha n tenha sido modificada, apenas segue
   if (!user.isModified('password')) return next()
 
-  //O 10 é Sal
   let hashedPassword = await bcrypt.hash(user.password, 10)
 
   user.password = hashedPassword
@@ -50,7 +51,7 @@ userSchema.pre('save', async function (next) {
 })
 
 userSchema.methods.matchPasswords = async function (userPassword) {
-  //Compara o valor recebido com o valor do objeto userSchema
+
   const isMatch = await bcrypt.compare(userPassword, this.password)
 
   return isMatch

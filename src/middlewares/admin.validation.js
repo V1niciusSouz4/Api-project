@@ -1,31 +1,31 @@
 import { userModel } from "../modules/users/user.model.js"
 
-export const validateTokenAdmin = async(req, res, next) => {
+export const adminGlobal = async(req, res, next) => {
 
-    const token = req.headers.authorization
+    const user = await userModel.findOne({_id: req.user_id})
 
-    const { sub } = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString())
+    let teste = await userModel.find({}, { password: 0, __v: 0 })
 
-    const teste = await userModel.findById( sub )
-    
-    if( teste.admin )
-      return next()
+    console.log(teste)
 
-    return res.status(400).json({message: "Usuário não autorizado"})
-}
-
-export const validateAdmin = async(req, res, next) => {
-
-    const token = req.body.email   
-
-    const testeAdmin = token.includes("@itlean")
-    console.log(testeAdmin)
-
-    if( testeAdmin ){
-        req.body.admin = true
+    if( teste.length == 0 ){
         return next()
     }
-      
-    req.body.admin = false
-    return next()
+    else if( user.adminGlobal )
+    {
+        return next()
+    }
+
+    return res.status(403).json({message: "Access denied"})
+}
+export const admin = async(req, res, next) => {
+
+    const user = await userModel.findOne({_id: req.user_id})
+
+    if( user.admin )
+    {
+        return next()
+    }
+
+    return res.status(403).json({message: "Access denied"})
 }

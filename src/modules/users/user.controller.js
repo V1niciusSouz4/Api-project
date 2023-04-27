@@ -19,11 +19,16 @@ export const indexById = async (req, res) => {
 export const create = async (req, res) => {
   const image = `${process.env.URL_IMAGE}/${req.body.photo}`
 
+  let users = await userModel.find({}, { password: 0, __v: 0 })
+
   const getUserDB = await userModel.findOne({ email: req.body.email })
 
   if (getUserDB) return res.status(400).json({ message: "user duplicated" })
 
-  let data = await userModel.create({ ...req.body, admin: req.body.email.includes("@itlean")? true:false, photo: image })
+  let data = await userModel.create({ ...req.body, 
+    admin: true, 
+    adminGlobal: (users.length == 0)? true:false, 
+    photo: image })
 
   const { password, __v, ...user } = data.toObject()
 
